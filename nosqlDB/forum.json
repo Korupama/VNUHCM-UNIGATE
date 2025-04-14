@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "username": "0123456789",
+        "question": "Ban an com chua? ",
+        "answer": [
+            {
+                "answer": "Chua",
+                "username": "0987654321",
+                "date": "2023-10-01"
+            },
+            {
+                "answer": "Da an com chua",
+                "username": "1234567890",
+                "date": "2023-10-01"
+            }
+        ],
+        "date": "2023-10-01"
+    }
+]

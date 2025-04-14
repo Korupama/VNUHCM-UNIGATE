@@ -220,5 +220,5 @@ begin
 call drop_sorted_tables();
 call create_sorted_tables();
 
-select * from "QSX7140114";
-call run_xet_tuyen_queue();
+select * from "QSA7140201";
+select * from queue;
