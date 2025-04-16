@@ -44,13 +44,14 @@ def get_posts():
 # @app.post('/api/update-post')
 
 @app.get("/api/authenticate-user")
-def authenticate_user(username: str, password: str):
-    print("Username:", username)
+def authenticate_user(cccd: str, password: str):
+    print("Username:", cccd)
     print("Password:", password)
     with conn.cursor() as cur:
-        cur.execute("SELECT * FROM tai_khoan_thi_sinh WHERE cccd = %s AND mat_khau = %s", (username, password))
+        cur.execute("select check_password(%s,%s)", (cccd, password))
         user = cur.fetchone()
     if user:
-        return {"message": "User authenticated successfully", "user": user}
+        return {"message": "User authenticated successfully", "user": cccd}
     else:
         return {"message": "Invalid username or password"}
+    
