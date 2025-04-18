@@ -136,89 +136,122 @@ select * from cccd_temp;
 drop view cccd_temp;
 
 CREATE OR REPLACE PROCEDURE run_xet_tuyen_queue()
-language plpgsql
+LANGUAGE plpgsql
 AS $$
-declare
-    r  record;
-    complete_student int;
-    total_student int;
-
+DECLARE
+    r RECORD;
     current_cccd varchar(12);
     current_so_nguyen_vong int;
     current_da_xet int;
-
     current_ma_nganh varchar(20);
     current_diem_xet_tuyen int;
-
     current_nganh_soluong int;
     current_nganh_chitieu int;
-
     last_cccd varchar(12);
-    last_diem_xt int;
+    last_diem_xt numeric;
     sql text;
-begin
-    total_student := (select count(*) from queue);
-    complete_student := 0;
 
-    while complete_student < total_student loop
-        create or replace view cccd_to_process as select cccd from queue where trang_thai = false ;
-        for r in select * from cccd_to_process loop
-                current_cccd := r.cccd;
-                select so_nguyen_vong, da_xet into current_so_nguyen_vong, current_da_xet from queue where cccd = current_cccd;
-                if current_da_xet >= current_so_nguyen_vong then
-                    update queue set trang_thai = true where cccd = current_cccd;
-                    complete_student := complete_student + 1;
-                    continue;
-                end if;
-                select ma_nganh into current_ma_nganh from nguyen_vong_xet_tuyen where cccd = current_cccd and thu_tu_nguyen_vong = current_da_xet + 1;
-                if current_ma_nganh is null then
-                    continue ;
-                end if;
-                select ho_so_xet_tuyen.diem_xet_tuyen into current_diem_xet_tuyen from ho_so_xet_tuyen where cccd = current_cccd ;
-                if current_diem_xet_tuyen is null then
-                    continue ;
-                end if;
-                select nganh_dao_tao_dai_hoc.chi_tieu_tuyen_sinh into current_nganh_chitieu from nganh_dao_tao_dai_hoc where ma_nganh = current_ma_nganh;
-                select count(*) into current_nganh_soluong from format('%I', current_ma_nganh);
-                if current_nganh_soluong < current_nganh_chitieu then
+    changes_made BOOLEAN := TRUE;
+    loop_counter INT := 0;
+BEGIN
+    WHILE changes_made AND loop_counter < 10000 LOOP
+        loop_counter := loop_counter + 1;
+        changes_made := FALSE;
+
+        FOR r IN SELECT cccd FROM queue WHERE trang_thai = FALSE LOOP
+            current_cccd := r.cccd;
+
+            SELECT so_nguyen_vong, da_xet INTO current_so_nguyen_vong, current_da_xet FROM queue WHERE cccd = current_cccd;
+
+            IF current_da_xet >= current_so_nguyen_vong THEN
+                UPDATE queue SET trang_thai = TRUE WHERE cccd = current_cccd;
+                changes_made := TRUE;
+                CONTINUE;
+            END IF;
+
+            SELECT ma_nganh INTO current_ma_nganh FROM nguyen_vong_xet_tuyen
+                WHERE cccd = current_cccd AND thu_tu_nguyen_vong = current_da_xet + 1;
+
+            IF current_ma_nganh IS NULL THEN
+                UPDATE queue SET da_xet = da_xet + 1 WHERE cccd = current_cccd;
+                changes_made := TRUE;
+                CONTINUE;
+            END IF;
+
+            SELECT diem_xet_tuyen INTO current_diem_xet_tuyen FROM ho_so_xet_tuyen WHERE cccd = current_cccd;
+
+            IF current_diem_xet_tuyen IS NULL THEN
+                UPDATE queue SET trang_thai = TRUE WHERE cccd = current_cccd;
+                changes_made := TRUE;
+                CONTINUE;
+            END IF;
+
+            SELECT chi_tieu_tuyen_sinh INTO current_nganh_chitieu FROM nganh_dao_tao_dai_hoc WHERE ma_nganh = current_ma_nganh;
+
+            EXECUTE format('SELECT COUNT(*) FROM %I', current_ma_nganh) INTO current_nganh_soluong;
+
+            IF current_nganh_soluong < current_nganh_chitieu THEN
+                sql := format('INSERT INTO %I (cccd, score) VALUES (%L, %L);',
+                              current_ma_nganh, current_cccd, current_diem_xet_tuyen);
+                EXECUTE sql;
+
+                UPDATE queue SET trang_thai = TRUE, da_xet = da_xet + 1 WHERE cccd = current_cccd;
+                changes_made := TRUE;
+            ELSE
+                EXECUTE format('SELECT cccd, score FROM %I ORDER BY score ASC LIMIT 1;', current_ma_nganh) INTO last_cccd, last_diem_xt;
+
+                IF last_diem_xt < current_diem_xet_tuyen THEN
+                    EXECUTE format('DELETE FROM %I WHERE cccd = %L;', current_ma_nganh, last_cccd);
+
                     sql := format('INSERT INTO %I (cccd, score) VALUES (%L, %L);',
-                                  current_ma_nganh,
-                                  current_cccd,
-                                  current_diem_xet_tuyen);
-                    execute sql;
-                    complete_student := complete_student + 1;
-                    update queue set trang_thai = true where cccd = current_cccd;
-                    update queue set da_xet = da_xet + 1 where cccd = current_cccd;
-                else
-                    select cccd, score into last_cccd, last_diem_xt from format('%I', current_ma_nganh) order by score desc limit 1;
-                    if last_diem_xt < current_diem_xet_tuyen then
-                        sql := format('DELETE FROM %I WHERE cccd = %L;', current_ma_nganh, last_cccd);
-                        execute sql;
+                                  current_ma_nganh, current_cccd, current_diem_xet_tuyen);
+                    EXECUTE sql;
 
-                        sql := format('INSERT INTO %I (cccd, score) VALUES (%L, %L);',
-                                      current_ma_nganh,
-                                      current_cccd,
-                                      current_diem_xet_tuyen);
-                        execute sql;
-                        update queue set trang_thai = false where cccd = last_cccd;
-                        update queue set da_xet = da_xet + 1 where cccd = last_cccd;
+                    UPDATE queue SET trang_thai = FALSE, da_xet = da_xet + 1 WHERE cccd = last_cccd;
+                    UPDATE queue SET trang_thai = TRUE, da_xet = da_xet + 1 WHERE cccd = current_cccd;
 
-                        update queue set trang_thai = true where cccd = current_cccd;
-                        update queue set da_xet = da_xet + 1 where cccd = current_cccd;
+                    changes_made := TRUE;
+                ELSE
+                    UPDATE queue SET da_xet = da_xet + 1 WHERE cccd = current_cccd;
+                    changes_made := TRUE;
+                END IF;
+            END IF;
+        END LOOP;
+    END LOOP;
 
-                    else
-                        continue ;
-                    end if;
-                end if;
+    IF loop_counter = 10000 THEN
+        RAISE NOTICE 'Procedure terminated after maximum loops reached (10000 iterations). Check logic!';
+    END IF;
 
-            end loop;
-        end loop;
-    end;
-
-    $$;
-
+END;
+$$;
 call drop_sorted_tables();
 call create_sorted_tables();
 
 select * from "QSA7140201";
 select * from queue;
+
+create index if not exists queue_idx on queue (cccd);
+call run_xet_tuyen_queue();
+
+call drop_sorted_tables();
+
+create or replace procedure clear_queue()
+language plpgsql
+as $$
+declare
+    r record;
+    sql text;
+begin
+    for r in select * from queue loop
+        sql := format('DELETE FROM queue WHERE cccd = %L;', r.cccd);
+        execute sql;
+    end loop;
+end;
+$$;
+call clear_queue();
+select * from queue;
+
+call insert_data();
+
+-- create index if not exists queue_idx on queue (cccd);

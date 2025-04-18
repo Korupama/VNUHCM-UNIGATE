@@ -119,3 +119,5 @@ end;
 $$;
 
 -- select check_password('abc', 'xyz')
+
+select * from tai_khoan_thi_sinh ;
