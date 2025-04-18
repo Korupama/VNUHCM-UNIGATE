@@ -6,6 +6,7 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 import json
+from datetime import datetime
 
 def connect_db():
     load_dotenv()
@@ -54,7 +55,39 @@ def get_post_topics():
         "number_of_topics": len(data)
     }
 
-# @app.post('/api/add-post')
+
+@app.post('/api/create-post')
+def create_post(post: dict):
+    with open('./nosqlDB/forum.json', 'r') as f:
+        data = json.load(f)
+    post['id'] = len(data) + 1
+    post['date'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data.append(post)
+    with open('./nosqlDB/forum.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    return {"message": "Post created successfully"}
+
+@app.post('/api/delete-post')
+def delete_post(post_id: int):
+    with open('./nosqlDB/forum.json', 'r') as f:
+        data = json.load(f)
+    data = [post for post in data if post['id'] != post_id]
+    with open('./nosqlDB/forum.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    return {"message": "Post deleted successfully"}
+
+@app.post('/api/update-post')
+def update_post(post_id: int, updated_post: dict):
+    with open('./nosqlDB/forum.json', 'r') as f:
+        data = json.load(f)
+    for post in data:
+        if post['id'] == post_id:
+            post.update(updated_post)
+            break
+    with open('./nosqlDB/forum.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    return {"message": "Post updated successfully"}
+
 # @app.post('/api/update-post')
 
 @app.get("/api/authenticate-user")
