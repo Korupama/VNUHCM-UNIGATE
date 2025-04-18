@@ -7,6 +7,7 @@ import psycopg2
 from dotenv import load_dotenv
 import json
 from datetime import datetime
+from fastapi.responses import FileResponse
 
 def connect_db():
     load_dotenv()
@@ -39,13 +40,13 @@ def hello():
 
 @app.get("/api/get-posts")
 def get_posts():
-    with open('./nosqlDB/forum.json', 'r') as f:
+    with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data
 
 @app.get("/api/get-post-topics")
 def get_post_topics():
-    with open('./nosqlDB/forum.json', 'r') as f:
+    with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     topics = set()
     for post in data:
@@ -58,33 +59,33 @@ def get_post_topics():
 
 @app.post('/api/create-post')
 def create_post(post: dict):
-    with open('./nosqlDB/forum.json', 'r') as f:
+    with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     post['id'] = len(data) + 1
     post['date'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     data.append(post)
-    with open('./nosqlDB/forum.json', 'w') as f:
+    with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
     return {"message": "Post created successfully"}
 
 @app.post('/api/delete-post')
 def delete_post(post_id: int):
-    with open('./nosqlDB/forum.json', 'r') as f:
+    with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     data = [post for post in data if post['id'] != post_id]
-    with open('./nosqlDB/forum.json', 'w') as f:
+    with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
     return {"message": "Post deleted successfully"}
 
 @app.post('/api/update-post')
 def update_post(post_id: int, updated_post: dict):
-    with open('./nosqlDB/forum.json', 'r') as f:
+    with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     for post in data:
         if post['id'] == post_id:
             post.update(updated_post)
             break
-    with open('./nosqlDB/forum.json', 'w') as f:
+    with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
     return {"message": "Post updated successfully"}
 
@@ -185,3 +186,19 @@ def get_application_form(cccd: str, dot_thi: int):
         return HTMLResponse(content=html)
     else:
         return {"message": "No application form found for this user"}
+
+
+@app.get("/api/get-documents-list")
+def get_documents_list():
+    with open('./nosqlDB/documents.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    return data
+
+@app.get("/api/get-document")
+def get_document(name: str):
+    # Check if document exists and return it as PDF
+    filepath = f"./documents/{name}.pdf"
+    if os.path.exists(filepath):
+        return FileResponse(filepath, media_type="application/pdf", filename=f"{name}.pdf")
+    else:
+        return {"error": "Document not found"}
