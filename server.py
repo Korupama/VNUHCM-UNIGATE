@@ -42,6 +42,18 @@ def get_posts():
         data = json.load(f)
     return data
 
+@app.get("/api/get-post-topics")
+def get_post_topics():
+    with open('./nosqlDB/forum.json', 'r') as f:
+        data = json.load(f)
+    topics = set()
+    for post in data:
+        topics.add(post['topic'])
+    return {
+        "topics": list(topics),
+        "number_of_topics": len(data)
+    }
+
 # @app.post('/api/add-post')
 # @app.post('/api/update-post')
 
