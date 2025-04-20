@@ -26,7 +26,7 @@ VNUHCM-UNIGATE là cổng thông tin tuyển sinh thông minh được phát tri
 ## Công nghệ sử dụng
 
 * **Frontend:** ReactJS + REST API + Axios
-* **Backend:** Django + FastAPI
+* **Backend:** FastAPI
 * **Hệ thống quản lý phiên bản:** Github
 * **Cơ sở dữ liệu:** PostgreSQL (dữ liệu quan hệ), NoSQL (bài đăng, ebook)
 * **Trí tuệ nhân tạo:** Chatbots, Hệ thống khuyến nghị ngành học.
@@ -90,7 +90,7 @@ VNUHCM-UNIGATE is a smart admission portal developed to optimize the process of 
 ## Technologies Used
 
 * **Frontend:** ReactJS + REST API + Axios
-* **Backend:** Django + FastAPI
+* **Backend:** FastAPI
 * **Version Control System:** Github
 * **Database:** PostgreSQL (relational data), NoSQL (posts, ebooks)
 * **Artificial Intelligence:** Chatbots, Major Recommendation System.
