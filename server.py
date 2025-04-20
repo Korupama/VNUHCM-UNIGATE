@@ -8,6 +8,18 @@ from dotenv import load_dotenv
 import json
 from datetime import datetime
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
+import re
+import unicodedata
+
+class Post(BaseModel):
+    id: int
+    username: str
+    question: str
+    answer: list
+    topic: str
+    date: str
+
 
 def connect_db():
     load_dotenv()
@@ -58,14 +70,17 @@ def get_post_topics():
 
 
 @app.post('/api/create-post')
-def create_post(post: dict):
+def create_post(post: Post):
     with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
-    post['id'] = len(data) + 1
-    post['date'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data.append(post)
+    post_dict = post.dict()
+    post_dict['id'] = len(data) + 1
+    post_dict['date'] = datetime.now().strftime("%Y-%m-%d")
+    data.append(post_dict)
+
     with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4)
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
     return {"message": "Post created successfully"}
 
 @app.post('/api/delete-post')
@@ -89,7 +104,25 @@ def update_post(post_id: int, updated_post: dict):
         json.dump(data, f, indent=4)
     return {"message": "Post updated successfully"}
 
-# @app.post('/api/update-post')
+@app.get("/api/get-topic-posts")
+def get_topic_posts(topic: str):
+    with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    def slugify(text):
+        text = unicodedata.normalize('NFD', str(text).lower())
+        text = text.encode('ascii', 'ignore').decode('ascii')
+        text = re.sub(r'[^a-z0-9\s-]', '', text)
+        text = re.sub(r'\s+', '-', text)
+        text = re.sub(r'-+', '-', text)
+        return text.strip()
+        
+    slug_topic = slugify(topic)
+    topic_posts = list(filter(lambda post: slugify(post['topic']) == slug_topic, data))
+    return {
+        "posts": topic_posts,
+        "number_of_posts": len(topic_posts)
+    }
 
 @app.get("/api/authenticate-user")
 def authenticate_user(cccd: str, password: str):
@@ -195,10 +228,16 @@ def get_documents_list():
     return data
 
 @app.get("/api/get-document")
-def get_document(name: str):
+def get_document(id: int):
     # Check if document exists and return it as PDF
-    filepath = f"./documents/{name}.pdf"
+    with open('./nosqlDB/documents.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    document = next((doc for doc in data if doc['id'] == id), None)
+    if not document:
+        return {"error": "Document not found"}
+    name = document['filename']
+    filepath = f"./documents/{name}"
     if os.path.exists(filepath):
-        return FileResponse(filepath, media_type="application/pdf", filename=f"{name}.pdf")
+        return FileResponse(filepath, media_type="application/pdf", filename=f"{name}")
     else:
         return {"error": "Document not found"}
