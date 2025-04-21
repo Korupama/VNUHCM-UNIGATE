@@ -8,6 +8,11 @@ from dotenv import load_dotenv
 import json
 from datetime import datetime
 from fastapi.responses import FileResponse
+from psycopg2.extras import RealDictCursor
+
+# Import the exam registration router
+from app.routers import exam_registration
+from app.routers import exam_results
 
 def connect_db():
     load_dotenv()
@@ -23,7 +28,11 @@ def connect_db():
 
 conn = connect_db()
 
-app = FastAPI() 
+app = FastAPI(
+    title="VNUHCM-UNIGATE API",
+    description="API for the VNUHCM-UNIGATE Admission Portal",
+    version="1.0.0",
+) 
 app.mount("/static", StaticFiles(directory="assets"), name="static")
 app.add_middleware(
     CORSMiddleware,
@@ -33,7 +42,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Định nghĩa API route
+# Make DB connection available to routers
+exam_registration.router.db_connection = conn
+
+# Include the exam registration router
+app.include_router(exam_registration.router)
+
+# Include the exam results router
+app.include_router(exam_results.router)
+
+# Existing API routes
 @app.get("/api/hello")
 def hello():
     return {"message": "Hello from FastAPI"}
@@ -89,17 +107,15 @@ def update_post(post_id: int, updated_post: dict):
         json.dump(data, f, indent=4)
     return {"message": "Post updated successfully"}
 
-# @app.post('/api/update-post')
+
 
 @app.get("/api/authenticate-user")
 def authenticate_user(cccd: str, password: str):
-    # print("Username:", cccd)
-    # print("Password:", password)
     with conn.cursor() as cur:
         cur.execute("select check_password(%s,%s)", (cccd, password))
         user = cur.fetchone()
     if user:
-        return {"message": "User authenticated successfully", "user": cccd}
+        return {"message": "User authenticated successfully", "user": cccd, "token": cccd}
     else:
         return {"message": "Invalid username or password"}
 
@@ -113,7 +129,6 @@ def get_application_form(cccd: str, dot_thi: int):
     with conn.cursor() as cur:
         cur.execute("select * from report_application where ma_ho_so_du_thi = %s", (ma_ho_so,))
         application_form = cur.fetchall() 
-    # print("Application Form:", application_form)
     if application_form:
         application_form = application_form[0]
         application_form_dict = {
@@ -202,3 +217,46 @@ def get_document(name: str):
         return FileResponse(filepath, media_type="application/pdf", filename=f"{name}.pdf")
     else:
         return {"error": "Document not found"}
+
+
+@app.get("/api/get-result-form", response_class=HTMLResponse)
+def get_result_form(cccd: str, dot_thi: int):
+    ma_ho_so = ''
+    if dot_thi == 1:
+        ma_ho_so = 'HS' + cccd
+    elif dot_thi == 2:
+        ma_ho_so = 'H2' + cccd
+    with conn.cursor() as cur:
+        cur.execute("select * from report_application where ma_ho_so_du_thi = %s", (ma_ho_so,))
+        result_form = cur.fetchall() 
+    if result_form:
+        result_form = result_form[0]
+        result_form_dict = {
+            "cccd": result_form[0],
+            "ma_ho_so_du_thi": result_form[1],
+            "dia_diem_du_thi": result_form[2],
+            "dot_thi": result_form[3], 
+            "ho_ten": result_form[4],
+            "ngay_sinh": result_form[5],
+            "ten_truong_thpt": result_form[6],
+            "tinh": result_form[7],
+            "diem_thanh_phan_tieng_viet": result_form[8], 
+            "diem_thanh_phan_tieng_anh": result_form[9], 
+            "diem_thanh_phan_toan_hoc": result_form[10],
+            "diem_thanh_phan_logic_phan_tich_so_lieu": result_form[11],
+            "diem_thanh_phan_suy_luan_khoa_hoc": result_form[12], 
+            "ket_qua_thi": result_form[13]
+        }
+  
+        
+        html = f"""
+        <html>
+        <body>
+        
+        </body>
+        </html>
+
+        """
+        return HTMLResponse(content=html)
+    else:
+        return {"message": "No result form found for this user"}
