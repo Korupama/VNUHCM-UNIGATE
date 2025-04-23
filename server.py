@@ -20,6 +20,7 @@ class Post(BaseModel):
     answer: list
     topic: str
     date: str
+    content: str
 
 
 # Import the exam registration router
