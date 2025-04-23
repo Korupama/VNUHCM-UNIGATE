@@ -99,6 +99,7 @@ def create_post(post: Post):
     with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
+    
     return {"message": "Post created successfully"}
 
 @app.post('/api/delete-post')
@@ -123,8 +124,22 @@ def update_post(post_id: int, updated_post: dict):
     return {"message": "Post updated successfully"}
 
 
+@app.get("/api/get-post/{post_id}")
+def get_post(post_id: int):
+    try:
+        with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
+            posts = json.load(f)
+    except FileNotFoundError:
+        return {"error": "Không tìm thấy file dữ liệu."}
+    except json.JSONDecodeError:
+        return {"error": "Lỗi đọc file JSON."}
 
+    # Tìm bài viết theo ID
+    for post in posts:
+        if post.get("id") == post_id:
+            return post
 
+    return {"error": "Không tìm thấy bài viết."}
 
 
 
@@ -164,6 +179,7 @@ def get_topic_posts(topic: str):
         "posts": topic_posts,
         "number_of_posts": len(topic_posts)
     }
+
 
 
 @app.get("/api/authenticate-user")
