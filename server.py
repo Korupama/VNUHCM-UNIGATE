@@ -45,10 +45,10 @@ from app.routers import admission_results
 # ...existing code...
 
 # Include the admission preferences router
-#app.include_router(admission_preferences.router)
+app.include_router(admission_preferences.router)
 
 # Include the admission results router
-#app.include_router(admission_results.router)
+app.include_router(admission_results.router)
 
 # ...existing code...
 def connect_db():
