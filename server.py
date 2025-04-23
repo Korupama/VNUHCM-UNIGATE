@@ -21,6 +21,15 @@ class Post(BaseModel):
     topic: str
     date: str
 
+class UserRegister(BaseModel):
+    cccd: str
+    password: str
+    gender: str
+    name: str
+    email: str
+    phone: str
+    
+
 
 # Import the exam registration router
 from app.routers import exam_registration
@@ -122,29 +131,6 @@ def update_post(post_id: int, updated_post: dict):
         json.dump(data, f, indent=4)
     return {"message": "Post updated successfully"}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @app.get("/api/get-topic-posts")
 def get_topic_posts(topic: str):
     with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
@@ -175,6 +161,41 @@ def authenticate_user(cccd: str, password: str):
         return {"message": "User authenticated successfully", "user": cccd, "token": cccd}
     else:
         return {"message": "Invalid username or password"}
+    
+@app.get("/api/register-user")
+def register_user(user_infor: UserRegister):
+    with conn.cursor() as cur:
+        cur.execute("insert into thi_sinh(cccd,ho_ten,gioi_tinh,email,so_dien_thoai) values (%s,%s,%s,%s,%s)", (user_infor.cccd, user_infor.name, user_infor.gender, user_infor.email, user_infor.phone))
+        cur.execute("call insert_tai_khoan(%s, %s)", user_infor.cccd, user_infor.password)
+        conn.commit()
+    return {"message": "User registered successfully", "user": user_infor.cccd, "token": user_infor.cccd}
+
+@app.get("/api/get-user-info")
+def get_user_info(cccd: str):
+    with conn.cursor() as cur:
+        cur.execute("select * from thi_sinh where cccd = %s", (cccd,))
+        user = cur.fetchall()
+    if user:
+        user = user[0]
+        print(user)
+        user_dict = {
+            "cccd": user[0],
+            "name": user[1],
+            "gender": user[2],
+            "dob": user[3],
+            "race": user[4],
+            "address": user[5],
+            "contact_address": user[6],
+            "province_code": user[7],
+            "school_code": user[8],
+            "email": user[9],
+            "phone": user[10],
+            "priority_area_code": user[11],
+            "priority_person_code": user[12],
+        }
+        return {"message": "User info retrieved successfully", "user": user_dict}
+    else:
+        return {"message": "User not found"}        
 
 @app.get("/api/get-application-form", response_class=HTMLResponse)
 def get_application_form(cccd: str, dot_thi: int):
