@@ -10,5 +10,7 @@ dependencies = [
     "fastapi>=0.115.12",
     "pandas>=2.2.3",
     "psycopg2>=2.9.10",
+    "pyjwt>=2.10.1",
+    "python-multipart>=0.0.20",
     "uvicorn>=0.34.1",
 ]
