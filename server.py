@@ -107,9 +107,23 @@ def get_post_topics():
     topics = set()
     for post in data:
         topics.add(post['topic'])
+    topic_len = {}
+    for topic in topics:
+        topic_len[topic] = len(list(filter(lambda post: post['topic'] == topic, data)))
+    last_post_title_dict = {}
+    for topic in topics:
+        last_post = max(filter(lambda post: post['topic'] == topic, data), key=lambda x: x['date'])
+        last_post_title_dict[topic] = last_post['question']
+    last_post_time_dict = {}
+    for topic in topics:
+        last_post = max(filter(lambda post: post['topic'] == topic, data), key=lambda x: x['date'])
+        last_post_time_dict[topic] = last_post['date']
+    last_post_time_dict = dict(sorted(last_post_time_dict.items(), key=lambda item: item[1]))
     return {
         "topics": list(topics),
-        "number_of_topics": len(data)
+        "number_of_topics": topic_len,
+        "last_post_title": last_post_title_dict,
+        "last_post_time": last_post_time_dict
     }
 
 
@@ -166,25 +180,6 @@ def get_post(post_id: int):
             return post
 
     return {"error": "Không tìm thấy bài viết."}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @app.get("/api/get-topic-posts")
 def get_topic_posts(topic: str):
