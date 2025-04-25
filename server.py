@@ -22,7 +22,9 @@ class Post(BaseModel):
     date: str
     content: str
 
-
+class AnswerInput(BaseModel):
+    answer: str
+    username: str
 # Import the exam registration router
 from app.routers import exam_registration
 from app.routers import exam_results
@@ -181,6 +183,37 @@ def get_post(post_id: int):
 
     return {"error": "Không tìm thấy bài viết."}
 
+@app.get("/api/latest-posts")
+def get_latest_posts():
+    try:
+        with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        # Bỏ qua bài viết không có trường "date"
+        posts = [post for post in data if "date" in post]
+
+        # Chuyển date thành kiểu datetime để so sánh
+        for post in posts:
+            try:
+                post["parsed_date"] = datetime.strptime(post["date"], "%Y-%m-%d")
+            except ValueError:
+                post["parsed_date"] = datetime.min  # Nếu lỗi định dạng thì đẩy về rất xa
+
+        # Sắp xếp theo ngày giảm dần
+        sorted_posts = sorted(posts, key=lambda x: x["parsed_date"], reverse=True)
+
+        # Chọn 5 bài viết mới nhất
+        latest_posts = sorted_posts[:5]
+
+        # Xoá trường phụ trước khi trả về
+        for post in latest_posts:
+            del post["parsed_date"]
+
+        return latest_posts
+
+    except Exception as e:
+        return {"error": str(e)}
+    
 @app.get("/api/get-topic-posts")
 def get_topic_posts(topic: str):
     with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
@@ -201,7 +234,41 @@ def get_topic_posts(topic: str):
         "number_of_posts": len(topic_posts)
     }
 
+@app.post("/api/submit-answer/{id}")
+def submit_answer(id: int, data: AnswerInput):
+    try:
+        # Đọc dữ liệu từ JSON file
+        with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
+            posts = json.load(f)
 
+        # Tìm bài viết theo id
+        for post in posts:
+            if post["id"] == id:
+                # Tạo comment mới
+                username = data.username.strip() or "Ẩn danh"
+                new_answer = {
+                    "answer": data.answer,
+                    "username": username,
+                    "date": datetime.now().strftime("%Y-%m-%d")
+                }
+
+                # Đảm bảo post có trường answer là list
+                if "answer" not in post or not isinstance(post["answer"], list):
+                    post["answer"] = []
+
+                # Thêm comment vào danh sách
+                post["answer"].append(new_answer)
+
+                # Ghi lại vào file JSON
+                with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
+                    json.dump(posts, f, indent=4, ensure_ascii=False)
+
+                return {"message": "Trả lời đã được thêm", "new_answer": new_answer}
+
+        return {"error": "Không tìm thấy bài viết có id =", "id": id}
+
+    except Exception as e:
+        return {"error": "Lỗi server", "detail": str(e)}
 
 @app.get("/api/authenticate-user")
 def authenticate_user(cccd: str, password: str):
@@ -302,6 +369,8 @@ def get_documents_list():
     with open('./nosqlDB/documents.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data
+
+
 
 @app.get("/api/get-document")
 def get_document(id: int):

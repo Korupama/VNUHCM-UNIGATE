@@ -13,6 +13,11 @@
                 "answer": "Da an com chua",
                 "username": "1234567890",
                 "date": "2023-10-01"
+            },
+            {
+                "answer": "djt con me may",
+                "username": "user123",
+                "date": "2025-04-24"
             }
         ],
         "date": "2023-10-01",
@@ -30,7 +35,23 @@
         "id": 3,
         "username": "",
         "question": "hai dong",
-        "answer": [],
+        "answer": [
+            {
+                "answer": "anh nayf ddep tri qua",
+                "username": "user123",
+                "date": "2025-04-24"
+            },
+            {
+                "answer": "camr on ban nha",
+                "username": "user123",
+                "date": "2025-04-24"
+            },
+            {
+                "answer": "yes sir",
+                "username": "user123",
+                "date": "2025-04-24"
+            }
+        ],
         "topic": "Doing",
         "date": "2025-04-23",
         "content": "helo"
@@ -39,7 +60,23 @@
         "id": 4,
         "username": "",
         "question": "helllo",
-        "answer": [],
+        "answer": [
+            {
+                "answer": "ok bạn",
+                "username": "user123",
+                "date": "2025-04-24"
+            },
+            {
+                "answer": "cảm ơn vì lời khen",
+                "username": "user123",
+                "date": "2025-04-24"
+            },
+            {
+                "answer": "djt me tk bels\n",
+                "username": "user123",
+                "date": "2025-04-24"
+            }
+        ],
         "topic": "Đánh giá năng lực",
         "date": "2025-04-23",
         "content": "dong dep trai"
@@ -48,10 +85,25 @@
         "id": 5,
         "username": "",
         "question": "hom nay toi buoi",
-        "answer": [],
+        "answer": [
+            {
+                "username": "Xin chao",
+                "answer": "Xin chao",
+                "date": "2023-10-01"
+            },
+            {
+                "answer": "chao ban",
+                "username": "user123",
+                "date": "2025-04-24"
+            },
+            {
+                "answer": "tại sao bạn lại buoi",
+                "username": "user123",
+                "date": "2025-04-24"
+            }
+        ],
         "topic": "Đánh giá năng lực",
         "date": "2025-04-23",
         "content": "hom nay toi buoi hom nay toi buoi hom nay toi buoi hom nay toi buoi hom nay toi buoi hom nay toi buoihom nay toi buoi"
     }
-   
 ]
