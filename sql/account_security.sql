@@ -120,4 +120,4 @@ $$;
 
 -- select check_password('abc', 'xyz')
 
-select * from tai_khoan_thi_sinh ;
+select * from tai_khoan_thi_sinh LIMIT 10;

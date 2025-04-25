@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, Form, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +12,7 @@ from pydantic import BaseModel
 import re
 import unicodedata
 from psycopg2.extras import RealDictCursor
+from app.services.auth_utils import verify_user, create_access_token, get_current_user
 
 class Post(BaseModel):
     id: int
@@ -25,6 +26,10 @@ class Post(BaseModel):
 class AnswerInput(BaseModel):
     answer: str
     username: str
+class LoginForm(BaseModel):
+    username: str
+    password: str
+
 # Import the exam registration router
 from app.routers import exam_registration
 from app.routers import exam_results
@@ -240,8 +245,7 @@ def submit_answer(id: int, data: AnswerInput):
         # Đọc dữ liệu từ JSON file
         with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
             posts = json.load(f)
-
-        # Tìm bài viết theo id
+# Tìm bài viết theo id
         for post in posts:
             if post["id"] == id:
                 # Tạo comment mới
@@ -270,15 +274,29 @@ def submit_answer(id: int, data: AnswerInput):
     except Exception as e:
         return {"error": "Lỗi server", "detail": str(e)}
 
-@app.get("/api/authenticate-user")
-def authenticate_user(cccd: str, password: str):
-    with conn.cursor() as cur:
-        cur.execute("select check_password(%s,%s)", (cccd, password))
-        user = cur.fetchone()
-    if user:
-        return {"message": "User authenticated successfully", "user": cccd, "token": cccd}
-    else:
-        return {"message": "Invalid username or password"}
+
+
+@app.post("/api/login")
+def login(data: LoginForm, response: Response):
+    user = verify_user(conn, data.username, data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sai tài khoản hoặc mật khẩu")
+
+    token = create_access_token({"sub": user["username"]})
+    return {"access_token": token}  # Gửi về body để FE decode
+
+        
+@app.get("/api/me")
+def read_me(request: Request, current_user: dict = Depends(get_current_user)):
+    print(request.headers, flush=True)
+    return current_user
+
+
+@app.post("/api/logout")
+def logout(response: Response):
+    response.delete_cookie("access_token", path="/")
+    return {"message": "Đăng xuất thành công"}
+
 
 @app.get("/api/get-application-form", response_class=HTMLResponse)
 def get_application_form(cccd: str, dot_thi: int):
