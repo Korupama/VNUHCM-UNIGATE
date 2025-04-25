@@ -33,6 +33,8 @@ from app.routers import exam_results
 from app.routers import admission_info
 from app.routers import admission_preferences
 from app.routers import admission_results
+from app.routers import user_registration
+from app.routers import user_update
 
 # ...existing code...
 from app.routers import admission_preferences
@@ -92,6 +94,18 @@ app.include_router(admission_preferences.router)
 
 # Include the admission results router
 app.include_router(admission_results.router)
+
+# Make DB connection available to routers
+user_registration.router.db_connection = conn
+
+# Include the user registration router
+app.include_router(user_registration.router)
+
+# Make DB connection available to routers
+user_update.router.db_connection = conn
+
+# Include the user update router
+app.include_router(user_update.router)
 
 # Existing API routes
 @app.get("/api/hello")
