@@ -3,6 +3,11 @@
 def get_report_application( application_form_dict: dict, time: str):
     return f"""
         <html>
+         <style>
+            body {{
+                font-family: "Times New Roman", Times, serif;
+            }}
+            </style>
         <body>
         <div style="width: 100%; height: 100%; position: relative; background: white; overflow: hidden">
             <img style="width: 180px; height: 55px; left: 42px; top: 39px; position: absolute" src="/static/logovnuhcm.png" />
