@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Response, Form, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
 import psycopg2
@@ -293,6 +293,17 @@ def submit_answer(id: int, data: AnswerInput):
 
 @app.post("/api/login")
 def login(data: LoginForm, response: Response):
+    admin_usernames = os.getenv('ADMIN_USERS', '')
+    admin_passwords = os.getenv('ADMIN_PASSWORDS', '')
+
+    admin_users = dict(zip(admin_usernames.split(','), admin_passwords.split(',')))
+
+    username = data.username.strip()
+    password = data.password.strip()
+
+    if username in admin_users and admin_users[username] == password:
+        token = create_access_token({"sub": username, "role": "admin"})
+        return {"access_token": token}
     user = verify_user(conn, data.username, data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Sai tài khoản hoặc mật khẩu")
@@ -309,9 +320,9 @@ def read_me(request: Request, current_user: dict = Depends(get_current_user)):
 
 @app.post("/api/logout")
 def logout(response: Response):
+    response = JSONResponse(content={"message": "Đăng xuất thành công"})
     response.delete_cookie("access_token", path="/")
-    return {"message": "Đăng xuất thành công"}
-
+    return response
 
 @app.get("/api/get-application-report", response_class=HTMLResponse)
 def get_application_report(cccd: str, dot_thi: int):

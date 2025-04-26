@@ -1,11 +1,20 @@
 import jwt
+import os
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Cookie, Depends, Header
 from typing import Optional
+from dotenv import load_dotenv
 
-SECRET_KEY = "CHANGE_ME_SECRET" #update on env later
+load_dotenv()
+
+SECRET_KEY = "CHANGE_ME_SECRET"
 ALGORITHM = "HS256"
 ACCESS_EXPIRES_MIN = 60 * 24
+
+# Load admin account từ .env
+admin_usernames = os.getenv('ADMIN_USERS', '').split(',')
+admin_passwords = os.getenv('ADMIN_PASSWORDS', '').split(',')
+ADMIN_USERS = dict(zip(admin_usernames, admin_passwords))
 
 
 def create_access_token(payload: dict, minutes: int = ACCESS_EXPIRES_MIN):
@@ -24,13 +33,18 @@ def decode_access_token(token: str):
 
 
 def verify_user(conn, username: str, plain_pw: str):
+    # Nếu là admin
+    if username in ADMIN_USERS and ADMIN_USERS[username] == plain_pw:
+        return {"username": username, "role": "admin"}
+
+    # Nếu không phải admin --> kiểm tra DB
     from psycopg2.extras import RealDictCursor
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT check_password(%s, %s)", (username, plain_pw))
         result = cur.fetchone()
         if not result or not result["check_password"]:
             return None
-        return {"username": username}
+        return {"username": username, "role": "user"}  # role user mặc định
 
 
 def get_current_user(authorization: Optional[str] = Header(None)):
@@ -39,6 +53,10 @@ def get_current_user(authorization: Optional[str] = Header(None)):
 
     token = authorization.split("Bearer ")[1]
     payload = decode_access_token(token)
-    print(authorization, flush=True)
+    username = payload.get("sub")
+    role = payload.get("role", "user")  # mặc định role=user nếu không có
 
-    return {"username": payload["sub"]}
+    if not username:
+        raise HTTPException(status_code=401, detail="Token không hợp lệ.")
+
+    return {"username": username, "role": role}
