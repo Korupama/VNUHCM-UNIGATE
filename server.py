@@ -485,5 +485,22 @@ def get_result_form(cccd: str, dot_thi: int):
         return {"message": "No result form found for this user"}
 
 
+@app.get("/api/recommend-field-of-study")
+def recommend_field_of_study(cccd: str):
+    """
+    API endpoint to recommend a field of study based on the provided CCCD.
+    """
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Execute the query with the provided CCCD
+            cur.execute("SELECT * FROM fn_khuyen_nghi_nganh_hoc(%s);", (cccd,))
+            results = cur.fetchall()
+        
+        # Return the results as a JSON response
+        return {"recommendations": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 
