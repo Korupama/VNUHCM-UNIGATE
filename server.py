@@ -66,6 +66,10 @@ class Student(BaseModel):
     khu_vuc_uu_tien: Optional[str] = None     # Khu vực ưu tiên
     doi_tuong_uu_tien: Optional[int] = None   # Đối tượng ưu tiên (1 đến 7)
 
+class MajorQuotaRequest(BaseModel):
+    major: str
+    quota: int
+
 # ...existing code...
 def connect_db():
     load_dotenv()
@@ -488,6 +492,46 @@ def update_student(response: Response):
             ))
             conn.commit()
         return {"message": "Cập nhật thông tin thành công"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Lỗi máy chủ: {str(e)}")
+
+@app.post("/api/delete-student")
+def delete_student(cccd:str):
+    try:
+        with conn.cursor() as cur:
+            # Delete student information
+            cur.execute("DELETE FROM thi_sinh WHERE cccd = %s", (cccd,))
+            conn.commit()
+        return {"message": "Xóa thí sinh thành công"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Lỗi máy chủ: {str(e)}")
+    
+@app.get("/api/get-university-details")
+def get_university_details():
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM nganh_dao_tao_dai_hoc")
+            details = cur.fetchall()
+        return details
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/api/update-major-quota")
+def update_major_quota(request: MajorQuotaRequest):
+    major = request.major
+    quota = request.quota
+    try:
+        with conn.cursor() as cur:
+            # Update major quota
+            cur.execute("""
+                UPDATE nganh_dao_tao_dai_hoc 
+                SET chi_tieu_tuyen_sinh = %s 
+                WHERE ten_nganh = %s
+            """, (quota, major))
+            conn.commit()
+        return {"message": "Cập nhật chỉ tiêu thành công"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Lỗi máy chủ: {str(e)}")
