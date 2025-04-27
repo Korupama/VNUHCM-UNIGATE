@@ -16,6 +16,14 @@ from app.services.auth_utils import verify_user, create_access_token, get_curren
 from app.services.application_report import get_report_application 
 from app.services.result_report import get_result_report
 from app.services.chatbot import get_response
+from typing import Optional
+
+class DeletePostRequest(BaseModel):
+    post_id: int
+
+class UpdatePostRequest(BaseModel):
+    post_id: int
+    updated_post: dict
 
 class Post(BaseModel):
     id: int
@@ -42,6 +50,21 @@ class RegisterForm(BaseModel):
 
 class QuestionRequest(BaseModel):
     question: str
+
+class Student(BaseModel):
+    cccd: str                       # Số căn cước công dân, khóa chính
+    ho_ten: str                     # Họ và tên đầy đủ
+    gioi_tinh: str                  # Nam hoặc Nữ
+    ngay_sinh: str                  # Ngày sinh (có thể định dạng thêm)
+    dan_toc: Optional[str] = None   # Dân tộc (không bắt buộc)
+    dia_chi_thuong_tru: Optional[str] = None  # Địa chỉ thường trú
+    dia_chi_lien_lac: Optional[str] = None    # Địa chỉ liên lạc
+    truong_thpt_ma_tinh: Optional[str] = None # Mã tỉnh của trường THPT
+    ma_truong_thpt: Optional[str] = None      # Mã trường THPT
+    email: Optional[EmailStr] = None          # Email (validate đúng dạng email)
+    so_dien_thoai: Optional[str] = None       # Số điện thoại
+    khu_vuc_uu_tien: Optional[str] = None     # Khu vực ưu tiên
+    doi_tuong_uu_tien: Optional[int] = None   # Đối tượng ưu tiên (1 đến 7)
 
 # ...existing code...
 def connect_db():
@@ -118,6 +141,7 @@ def create_post(post: Post):
     post_dict = post.dict()
     post_dict['id'] = len(data) + 1
     post_dict['date'] = datetime.now().strftime("%Y-%m-%d")
+    post_dict['status'] = "Chờ duyệt"
     data.append(post_dict)
 
     with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
@@ -127,7 +151,8 @@ def create_post(post: Post):
     return {"message": "Post created successfully"}
 
 @app.post('/api/delete-post')
-def delete_post(post_id: int):
+def delete_post(request: DeletePostRequest):
+    post_id = request.post_id
     with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     data = [post for post in data if post['id'] != post_id]
@@ -136,15 +161,21 @@ def delete_post(post_id: int):
     return {"message": "Post deleted successfully"}
 
 @app.post('/api/update-post')
-def update_post(post_id: int, updated_post: dict):
+def update_post(request: UpdatePostRequest):
+    post_id = request.post_id
+    updated_post = request.updated_post
+
     with open('./nosqlDB/forum.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
+
     for post in data:
         if post['id'] == post_id:
             post.update(updated_post)
             break
+
     with open('./nosqlDB/forum.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4)
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
     return {"message": "Post updated successfully"}
 
 
@@ -427,3 +458,36 @@ def recommend_field_of_study(cccd: str):
 def get_bot_answer(userQuestion: QuestionRequest):
     reply = get_response(userQuestion.question)
     return {"reply": reply}
+
+@app.get("/api/get-all-students")
+def get_all_students():
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT * FROM thi_sinh limit 1000")
+        students = cur.fetchall()
+    return students
+
+@app.post("/api/update-student")
+def update_student(response: Response):
+    student = response.student
+    try:
+        with conn.cursor() as cur:
+            # Update student information
+            cur.execute("""
+                UPDATE thi_sinh 
+                SET ho_ten = %s, gioi_tinh = %s, ngay_sinh = %s, dan_toc = %s, 
+                    dia_chi_thuong_tru = %s, dia_chi_lien_lac = %s, 
+                    ma_truong_thpt = %s, so_dien_thoai = %s, khu_vuc_uu_tien = %s,
+                    doi_tuong_uu_tien = %s
+                WHERE cccd = %s
+            """, (
+                student.ho_ten, student.gioi_tinh, student.ngay_sinh, student.dan_toc,
+                student.dia_chi_thuong_tru, student.dia_chi_lien_lac,
+                student.ma_truong_thpt, student.so_dien_thoai,
+                student.khu_vuc_uu_tien, student.doi_tuong_uu_tien,
+                student.cccd
+            ))
+            conn.commit()
+        return {"message": "Cập nhật thông tin thành công"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Lỗi máy chủ: {str(e)}")

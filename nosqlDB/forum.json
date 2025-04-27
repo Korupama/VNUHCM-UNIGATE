@@ -2,103 +2,99 @@
     {
         "id": 1,
         "username": "0123456789",
-        "question": "Kỳ thi Đánh giá năng lực của ĐHQG-HCM năm nay có những thay đổi gì?",
+        "question": "K\u1ef3 thi \u0110\u00e1nh gi\u00e1 n\u0103ng l\u1ef1c c\u1ee7a \u0110HQG-HCM n\u0103m nay c\u00f3 nh\u1eefng thay \u0111\u1ed5i g\u00ec?",
         "answer": [
             {
-                "answer": "Năm nay đề thi có thêm phần tư duy phản biện và giảm thời gian làm bài một chút.",
+                "answer": "N\u0103m nay \u0111\u1ec1 thi c\u00f3 th\u00eam ph\u1ea7n t\u01b0 duy ph\u1ea3n bi\u1ec7n v\u00e0 gi\u1ea3m th\u1eddi gian l\u00e0m b\u00e0i m\u1ed9t ch\u00fat.",
                 "username": "0987654321",
                 "date": "2025-04-24"
             },
             {
-                "answer": "Mình nghe nói số lượng câu hỏi phần định lượng được điều chỉnh lại.",
+                "answer": "M\u00ecnh nghe n\u00f3i s\u1ed1 l\u01b0\u1ee3ng c\u00e2u h\u1ecfi ph\u1ea7n \u0111\u1ecbnh l\u01b0\u1ee3ng \u0111\u01b0\u1ee3c \u0111i\u1ec1u ch\u1ec9nh l\u1ea1i.",
                 "username": "1234567890",
                 "date": "2025-04-24"
             }
         ],
         "date": "2025-04-24",
-        "topic": "Thông tin kỳ thi"
+        "topic": "Th\u00f4ng tin k\u1ef3 thi",
+        "status": "\u0110\u00e3 duy\u1ec7t"
     },
     {
         "id": 2,
         "username": "",
-        "question": "Có cần ôn luyện riêng cho phần tư duy phản biện trong kỳ thi không?",
+        "question": "C\u00f3 c\u1ea7n \u00f4n luy\u1ec7n ri\u00eang cho ph\u1ea7n t\u01b0 duy ph\u1ea3n bi\u1ec7n trong k\u1ef3 thi kh\u00f4ng?",
         "answer": [
             {
-                "answer": "Theo mình nên ôn luyện kỹ vì phần này chiếm điểm khá quan trọng.",
+                "answer": "Theo m\u00ecnh n\u00ean \u00f4n luy\u1ec7n k\u1ef9 v\u00ec ph\u1ea7n n\u00e0y chi\u1ebfm \u0111i\u1ec3m kh\u00e1 quan tr\u1ecdng.",
                 "username": "user123",
                 "date": "2025-04-24"
             }
         ],
-        "topic": "Chia sẻ kinh nghiệm ôn thi",
-        "date": "2025-04-24"
+        "topic": "Chia s\u1ebb kinh nghi\u1ec7m \u00f4n thi",
+        "date": "2025-04-24",
+        "status": "\u0110\u00e3 t\u1eeb ch\u1ed1i"
     },
     {
         "id": 3,
         "username": "",
-        "question": "Những tài liệu nào hữu ích để luyện đề Đánh giá năng lực?",
+        "question": "Nh\u1eefng t\u00e0i li\u1ec7u n\u00e0o h\u1eefu \u00edch \u0111\u1ec3 luy\u1ec7n \u0111\u1ec1 \u0110\u00e1nh gi\u00e1 n\u0103ng l\u1ef1c?",
         "answer": [
             {
-                "answer": "Bạn nên tham khảo bộ đề của ĐHQG-HCM phát hành chính thức và các đề tham khảo online.",
+                "answer": "B\u1ea1n n\u00ean tham kh\u1ea3o b\u1ed9 \u0111\u1ec1 c\u1ee7a \u0110HQG-HCM ph\u00e1t h\u00e0nh ch\u00ednh th\u1ee9c v\u00e0 c\u00e1c \u0111\u1ec1 tham kh\u1ea3o online.",
                 "username": "user123",
                 "date": "2025-04-24"
             },
             {
-                "answer": "Ngoài ra nên luyện thêm sách rèn luyện kỹ năng tư duy logic.",
+                "answer": "Ngo\u00e0i ra n\u00ean luy\u1ec7n th\u00eam s\u00e1ch r\u00e8n luy\u1ec7n k\u1ef9 n\u0103ng t\u01b0 duy logic.",
                 "username": "user123",
                 "date": "2025-04-24"
             }
         ],
-        "topic": "Tài liệu ôn tập",
+        "topic": "T\u00e0i li\u1ec7u \u00f4n t\u1eadp",
         "date": "2025-04-24",
-        "content": "Danh sách tài liệu luyện thi ĐGNL năm 2025"
+        "content": "Danh s\u00e1ch t\u00e0i li\u1ec7u luy\u1ec7n thi \u0110GNL n\u0103m 2025",
+        "status": "\u0110\u00e3 duy\u1ec7t"
     },
     {
         "id": 4,
         "username": "",
-        "question": "Kinh nghiệm làm bài thi Đánh giá năng lực nhanh và hiệu quả?",
+        "question": "Kinh nghi\u1ec7m l\u00e0m b\u00e0i thi \u0110\u00e1nh gi\u00e1 n\u0103ng l\u1ef1c nhanh v\u00e0 hi\u1ec7u qu\u1ea3?",
         "answer": [
             {
-                "answer": "Bạn nên phân bổ thời gian hợp lý cho từng phần, tránh sa đà vào một câu quá lâu.",
+                "answer": "B\u1ea1n n\u00ean ph\u00e2n b\u1ed5 th\u1eddi gian h\u1ee3p l\u00fd cho t\u1eebng ph\u1ea7n, tr\u00e1nh sa \u0111\u00e0 v\u00e0o m\u1ed9t c\u00e2u qu\u00e1 l\u00e2u.",
                 "username": "user123",
                 "date": "2025-04-24"
             },
             {
-                "answer": "Đọc kỹ yêu cầu đề bài, chú ý các câu hỏi tư duy ngôn ngữ và logic.",
+                "answer": "\u0110\u1ecdc k\u1ef9 y\u00eau c\u1ea7u \u0111\u1ec1 b\u00e0i, ch\u00fa \u00fd c\u00e1c c\u00e2u h\u1ecfi t\u01b0 duy ng\u00f4n ng\u1eef v\u00e0 logic.",
                 "username": "user123",
                 "date": "2025-04-24"
             }
         ],
-        "topic": "Chia sẻ kinh nghiệm ôn thi",
+        "topic": "Chia s\u1ebb kinh nghi\u1ec7m \u00f4n thi",
         "date": "2025-04-24",
-        "content": "Tips làm bài thi hiệu quả cho kỳ thi ĐGNL."
+        "content": "Tips l\u00e0m b\u00e0i thi hi\u1ec7u qu\u1ea3 cho k\u1ef3 thi \u0110GNL.",
+        "status": "\u0110\u00e3 t\u1eeb ch\u1ed1i"
     },
     {
         "id": 5,
         "username": "",
-        "question": "Lịch thi và địa điểm thi Đánh giá năng lực 2025 của ĐHQG-HCM như thế nào?",
+        "question": "L\u1ecbch thi v\u00e0 \u0111\u1ecba \u0111i\u1ec3m thi \u0110\u00e1nh gi\u00e1 n\u0103ng l\u1ef1c 2025 c\u1ee7a \u0110HQG-HCM nh\u01b0 th\u1ebf n\u00e0o?",
         "answer": [
             {
-                "answer": "Theo mình biết, đợt 1 thi vào tháng 3 và đợt 2 vào tháng 5, thi tại TP.HCM và các tỉnh lân cận.",
+                "answer": "Theo m\u00ecnh bi\u1ebft, \u0111\u1ee3t 1 thi v\u00e0o th\u00e1ng 3 v\u00e0 \u0111\u1ee3t 2 v\u00e0o th\u00e1ng 5, thi t\u1ea1i TP.HCM v\u00e0 c\u00e1c t\u1ec9nh l\u00e2n c\u1eadn.",
                 "username": "user123",
                 "date": "2025-04-24"
             },
             {
-                "answer": "Bạn nên đăng ký sớm để chọn địa điểm thi gần nhất.",
+                "answer": "B\u1ea1n n\u00ean \u0111\u0103ng k\u00fd s\u1edbm \u0111\u1ec3 ch\u1ecdn \u0111\u1ecba \u0111i\u1ec3m thi g\u1ea7n nh\u1ea5t.",
                 "username": "user123",
                 "date": "2025-04-24"
             }
         ],
-        "topic": "Thông tin kỳ thi",
+        "topic": "Th\u00f4ng tin k\u1ef3 thi",
         "date": "2025-04-24",
-        "content": "Thông tin lịch thi và các địa điểm tổ chức kỳ thi ĐGNL."
-    },
-    {
-        "id": 6,
-        "username": "",
-        "question": "aaabbbb",
-        "answer": [],
-        "topic": "Đánh giá năng lực",
-        "date": "2025-04-27",
-        "content": "aabbbdđwwwwaa"
+        "content": "Th\u00f4ng tin l\u1ecbch thi v\u00e0 c\u00e1c \u0111\u1ecba \u0111i\u1ec3m t\u1ed5 ch\u1ee9c k\u1ef3 thi \u0110GNL.",
+        "status": "\u0110\u00e3 duy\u1ec7t"
     }
 ]
