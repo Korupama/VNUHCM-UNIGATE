@@ -266,7 +266,7 @@ def register(registerForm: RegisterForm):
                     INSERT INTO thi_sinh(cccd, ho_ten, email, so_dien_thoai) 
                     VALUES (%s, %s, %s, %s)
                 """, (registerForm.cccd, registerForm.full_name, registerForm.email, registerForm.phone_number))
-
+        conn.commit()    
         return {"message": "Đăng ký thành công"}
     except Exception as e:
         conn.rollback()

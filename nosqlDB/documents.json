@@ -5,7 +5,11 @@
         "title": "Tài liệu Hóa học",
         "size": "20.1 Kb",
         "date": "1/1/2023",
-        "downloads": 2
+        "downloads": 4,
+        "tags": [
+            "Hóa học",
+            "Khoa học tự nhiên"
+        ]
     },
     {
         "id": 2,
@@ -13,7 +17,11 @@
         "title": "Tài liệu Toán học",
         "size": "20.1 Kb",
         "date": "1/1/2023",
-        "downloads": 0
+        "downloads": 1,
+        "tags": [
+            "Toán học",
+            "Khoa học tự nhiên"
+        ]
     },
     {
         "id": 3,
@@ -21,7 +29,11 @@
         "title": "Tài liệu Vật lý",
         "size": "20.1 Kb",
         "date": "1/1/2023",
-        "downloads": 0
+        "downloads": 0,
+        "tags": [
+            "Vật lý",
+            "Khoa học tự nhiên"
+        ]
     },
     {
         "id": 4,
@@ -29,7 +41,11 @@
         "title": "Tài liệu Văn học",
         "size": "20.1 Kb",
         "date": "1/1/2023",
-        "downloads": 1
+        "downloads": 1,
+        "tags": [
+            "Văn học",
+            "Ngôn ngữ"
+        ]
     },
     {
         "id": 5,
@@ -37,7 +53,11 @@
         "title": "Tài liệu Tiếng Việt",
         "size": "20.1 Kb",
         "date": "1/1/2023",
-        "downloads": 0
+        "downloads": 0,
+        "tags": [
+            "Tiếng Việt",
+            "Ngôn ngữ"
+        ]
     },
     {
         "id": 6,
@@ -45,7 +65,12 @@
         "title": "Tài liệu Lịch sử - Địa lý",
         "size": "20.1 Kb",
         "date": "1/1/2023",
-        "downloads": 0
+        "downloads": 0,
+        "tags": [
+            "Lịch sử",
+            "Địa lý",
+            "Khoa học xã hội"
+        ]
     },
     {
         "id": 7,
@@ -53,6 +78,10 @@
         "title": "Tài liệu ôn tập tổng hợp",
         "size": "20.1 Kb",
         "date": "1/1/2023",
-        "downloads": 0
+        "downloads": 0,
+        "tags": [
+            "Ôn tập",
+            "Tổng hợp"
+        ]
     }
 ]
