@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import json
 from datetime import datetime
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, validator
 import re
 import unicodedata
 from psycopg2.extras import RealDictCursor
@@ -32,26 +32,12 @@ class LoginForm(BaseModel):
     username: str
     password: str
 
-# Import the exam registration router
-from app.routers import exam_registration
-from app.routers import exam_results
-from app.routers import admission_info
-from app.routers import admission_preferences
-from app.routers import admission_results
-from app.routers import user_registration
-from app.routers import user_update
-
-# ...existing code...
-from app.routers import admission_preferences
-from app.routers import admission_results
-
-# ...existing code...
-
-# Include the admission preferences router
-#app.include_router(admission_preferences.router)
-
-# Include the admission results router
-#app.include_router(admission_results.router)
+class RegisterForm(BaseModel):
+    cccd: str
+    full_name: str
+    email: str
+    phone_number: str
+    password: str
 
 # ...existing code...
 def connect_db():
@@ -82,35 +68,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Make DB connection available to routers
-exam_registration.router.db_connection = conn
-
-# Include the exam registration router
-app.include_router(exam_registration.router)
-
-# Include the exam results router
-app.include_router(exam_results.router)
-
-# Include the admission information router
-app.include_router(admission_info.router)
-
-# Include the admission preferences router
-app.include_router(admission_preferences.router)
-
-# Include the admission results router
-app.include_router(admission_results.router)
-
-# Make DB connection available to routers
-user_registration.router.db_connection = conn
-
-# Include the user registration router
-app.include_router(user_registration.router)
-
-# Make DB connection available to routers
-user_update.router.db_connection = conn
-
-# Include the user update router
-app.include_router(user_update.router)
 
 # Existing API routes
 @app.get("/api/hello")
@@ -290,8 +247,27 @@ def submit_answer(id: int, data: AnswerInput):
     except Exception as e:
         return {"error": "Lỗi server", "detail": str(e)}
 
+@app.post("/api/register")
+def register(registerForm: RegisterForm):
 
+    try:
+        with conn.cursor() as cur:
+            #check cccd exist
+            cur.execute("SELECT * FROM tai_khoan_thi_sinh WHERE cccd = %s", (registerForm.cccd,))
+            if cur.fetchone():
+                raise HTTPException(status_code=400, detail="CCCD đã tồn tại")
+            else:
+                cur.execute("call insert_tai_khoan(%s, %s)", (registerForm.cccd, registerForm.password))
+                cur.execute("""
+                    INSERT INTO thi_sinh(cccd, ho_ten, email, so_dien_thoai) 
+                    VALUES (%s, %s, %s, %s)
+                """, (registerForm.cccd, registerForm.full_name, registerForm.email, registerForm.phone_number))
 
+        return {"message": "Đăng ký thành công"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Lỗi máy chủ: {str(e)}")
+        
 @app.post("/api/login")
 def login(data: LoginForm, response: Response):
     admin_usernames = os.getenv('ADMIN_USERS', '')

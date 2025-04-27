@@ -4,12 +4,25 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, Cookie, Depends, Header
 from typing import Optional
 from dotenv import load_dotenv
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 load_dotenv()
 
 SECRET_KEY = "CHANGE_ME_SECRET"
 ALGORITHM = "HS256"
 ACCESS_EXPIRES_MIN = 60 * 24
+
+def connect_db():
+    conn = psycopg2.connect(
+        dbname=os.getenv('POSTGRESQL_DB'),
+        user=os.getenv('POSTGRESQL_USER'),
+        password=os.getenv('POSTGRESQL_PASSWORD'),
+        host=os.getenv('POSTGRESQL_HOST'),
+        port=os.getenv('POSTGRESQL_PORT'),
+        sslmode='require'
+    )
+    return conn
 
 # Load admin account từ .env
 admin_usernames = os.getenv('ADMIN_USERS', '').split(',')
@@ -55,8 +68,25 @@ def get_current_user(authorization: Optional[str] = Header(None)):
     payload = decode_access_token(token)
     username = payload.get("sub")
     role = payload.get("role", "user")  # mặc định role=user nếu không có
-
+    
     if not username:
         raise HTTPException(status_code=401, detail="Token không hợp lệ.")
+    
+    if role == "admin":
+        return {
+            "username": username,
+            "role": role
+        }
+    
+    conn = connect_db()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM thi_sinh WHERE cccd = %s", (username,))
+            user_data = cur.fetchone()
+            if not user_data:
+                raise HTTPException(status_code=401, detail="Không tìm thấy thí sinh")
+            user_data["role"] = role
+            return user_data
 
-    return {"username": username, "role": role}
+    finally:
+        conn.close()

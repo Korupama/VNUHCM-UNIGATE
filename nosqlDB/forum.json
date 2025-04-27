@@ -27,7 +27,13 @@
         "id": 2,
         "username": "",
         "question": "hello",
-        "answer": [],
+        "answer": [
+            {
+                "answer": "aweawg",
+                "username": "user123",
+                "date": "2025-04-26"
+            }
+        ],
         "topic": "Chia sẻ kinh nghiệm",
         "date": "2025-04-23"
     },
@@ -105,6 +111,11 @@
                 "answer": "tại sao bạn lại buoi",
                 "username": "user123",
                 "date": "2025-04-24"
+            },
+            {
+                "answer": "a",
+                "username": "user123",
+                "date": "2025-04-27"
             }
         ],
         "topic": "Đánh giá năng lực",
