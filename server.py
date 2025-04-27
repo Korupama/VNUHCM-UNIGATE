@@ -15,6 +15,7 @@ from psycopg2.extras import RealDictCursor
 from app.services.auth_utils import verify_user, create_access_token, get_current_user
 from app.services.application_report import get_report_application 
 from app.services.result_report import get_result_report
+from app.services.chatbot import get_response
 
 class Post(BaseModel):
     id: int
@@ -38,6 +39,9 @@ class RegisterForm(BaseModel):
     email: str
     phone_number: str
     password: str
+
+class QuestionRequest(BaseModel):
+    question: str
 
 # ...existing code...
 def connect_db():
@@ -419,6 +423,7 @@ def recommend_field_of_study(cccd: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-
-
+@app.post("/api/get-bot-answer")
+def get_bot_answer(userQuestion: QuestionRequest):
+    reply = get_response(userQuestion.question)
+    return {"reply": reply}

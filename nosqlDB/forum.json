@@ -1,125 +1,96 @@
 [
     {
-        "id": 1,
-        "username": "0123456789",
-        "question": "Ban an com chua? ",
-        "answer": [
-            {
-                "answer": "Chua",
-                "username": "0987654321",
-                "date": "2023-10-01"
-            },
-            {
-                "answer": "Da an com chua",
-                "username": "1234567890",
-                "date": "2023-10-01"
-            },
-            {
-                "answer": "djt con me may",
-                "username": "user123",
-                "date": "2025-04-24"
-            }
-        ],
-        "date": "2023-10-01",
-        "topic": "Thông báo"
+      "id": 1,
+      "username": "0123456789",
+      "question": "Kỳ thi Đánh giá năng lực của ĐHQG-HCM năm nay có những thay đổi gì?",
+      "answer": [
+        {
+          "answer": "Năm nay đề thi có thêm phần tư duy phản biện và giảm thời gian làm bài một chút.",
+          "username": "0987654321",
+          "date": "2025-04-24"
+        },
+        {
+          "answer": "Mình nghe nói số lượng câu hỏi phần định lượng được điều chỉnh lại.",
+          "username": "1234567890",
+          "date": "2025-04-24"
+        }
+      ],
+      "date": "2025-04-24",
+      "topic": "Thông tin kỳ thi"
     },
     {
-        "id": 2,
-        "username": "",
-        "question": "hello",
-        "answer": [
-            {
-                "answer": "aweawg",
-                "username": "user123",
-                "date": "2025-04-26"
-            }
-        ],
-        "topic": "Chia sẻ kinh nghiệm",
-        "date": "2025-04-23"
+      "id": 2,
+      "username": "",
+      "question": "Có cần ôn luyện riêng cho phần tư duy phản biện trong kỳ thi không?",
+      "answer": [
+        {
+          "answer": "Theo mình nên ôn luyện kỹ vì phần này chiếm điểm khá quan trọng.",
+          "username": "user123",
+          "date": "2025-04-24"
+        }
+      ],
+      "topic": "Chia sẻ kinh nghiệm ôn thi",
+      "date": "2025-04-24"
     },
     {
-        "id": 3,
-        "username": "",
-        "question": "hai dong",
-        "answer": [
-            {
-                "answer": "anh nayf ddep tri qua",
-                "username": "user123",
-                "date": "2025-04-24"
-            },
-            {
-                "answer": "camr on ban nha",
-                "username": "user123",
-                "date": "2025-04-24"
-            },
-            {
-                "answer": "yes sir",
-                "username": "user123",
-                "date": "2025-04-24"
-            }
-        ],
-        "topic": "Doing",
-        "date": "2025-04-23",
-        "content": "helo"
+      "id": 3,
+      "username": "",
+      "question": "Những tài liệu nào hữu ích để luyện đề Đánh giá năng lực?",
+      "answer": [
+        {
+          "answer": "Bạn nên tham khảo bộ đề của ĐHQG-HCM phát hành chính thức và các đề tham khảo online.",
+          "username": "user123",
+          "date": "2025-04-24"
+        },
+        {
+          "answer": "Ngoài ra nên luyện thêm sách rèn luyện kỹ năng tư duy logic.",
+          "username": "user123",
+          "date": "2025-04-24"
+        }
+      ],
+      "topic": "Tài liệu ôn tập",
+      "date": "2025-04-24",
+      "content": "Danh sách tài liệu luyện thi ĐGNL năm 2025"
     },
     {
-        "id": 4,
-        "username": "",
-        "question": "helllo",
-        "answer": [
-            {
-                "answer": "ok bạn",
-                "username": "user123",
-                "date": "2025-04-24"
-            },
-            {
-                "answer": "cảm ơn vì lời khen",
-                "username": "user123",
-                "date": "2025-04-24"
-            },
-            {
-                "answer": "djt me tk bels\n",
-                "username": "user123",
-                "date": "2025-04-24"
-            },
-            {
-                "answer": "xin chaof",
-                "username": "user123",
-                "date": "2025-04-25"
-            }
-        ],
-        "topic": "Đánh giá năng lực",
-        "date": "2025-04-23",
-        "content": "dong dep trai"
+      "id": 4,
+      "username": "",
+      "question": "Kinh nghiệm làm bài thi Đánh giá năng lực nhanh và hiệu quả?",
+      "answer": [
+        {
+          "answer": "Bạn nên phân bổ thời gian hợp lý cho từng phần, tránh sa đà vào một câu quá lâu.",
+          "username": "user123",
+          "date": "2025-04-24"
+        },
+        {
+          "answer": "Đọc kỹ yêu cầu đề bài, chú ý các câu hỏi tư duy ngôn ngữ và logic.",
+          "username": "user123",
+          "date": "2025-04-24"
+        }
+      ],
+      "topic": "Chia sẻ kinh nghiệm ôn thi",
+      "date": "2025-04-24",
+      "content": "Tips làm bài thi hiệu quả cho kỳ thi ĐGNL."
     },
     {
-        "id": 5,
-        "username": "",
-        "question": "hom nay toi buoi",
-        "answer": [
-            {
-                "username": "Xin chao",
-                "answer": "Xin chao",
-                "date": "2023-10-01"
-            },
-            {
-                "answer": "chao ban",
-                "username": "user123",
-                "date": "2025-04-24"
-            },
-            {
-                "answer": "tại sao bạn lại buoi",
-                "username": "user123",
-                "date": "2025-04-24"
-            },
-            {
-                "answer": "a",
-                "username": "user123",
-                "date": "2025-04-27"
-            }
-        ],
-        "topic": "Đánh giá năng lực",
-        "date": "2025-04-23",
-        "content": "hom nay toi buoi hom nay toi buoi hom nay toi buoi hom nay toi buoi hom nay toi buoi hom nay toi buoihom nay toi buoi"
+      "id": 5,
+      "username": "",
+      "question": "Lịch thi và địa điểm thi Đánh giá năng lực 2025 của ĐHQG-HCM như thế nào?",
+      "answer": [
+        {
+          "answer": "Theo mình biết, đợt 1 thi vào tháng 3 và đợt 2 vào tháng 5, thi tại TP.HCM và các tỉnh lân cận.",
+          "username": "user123",
+          "date": "2025-04-24"
+        },
+        {
+          "answer": "Bạn nên đăng ký sớm để chọn địa điểm thi gần nhất.",
+          "username": "user123",
+          "date": "2025-04-24"
+        }
+      ],
+      "topic": "Thông tin kỳ thi",
+      "date": "2025-04-24",
+      "content": "Thông tin lịch thi và các địa điểm tổ chức kỳ thi ĐGNL."
     }
-]
+  ]
+  

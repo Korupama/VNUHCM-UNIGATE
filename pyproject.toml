@@ -8,9 +8,11 @@ dependencies = [
     "bcrypt>=4.3.0",
     "dotenv>=0.9.9",
     "fastapi>=0.115.12",
+    "ollama>=0.4.8",
     "pandas>=2.2.3",
     "psycopg2>=2.9.10",
     "pyjwt>=2.10.1",
     "python-multipart>=0.0.20",
+    "requests>=2.32.3",
     "uvicorn>=0.34.1",
 ]
