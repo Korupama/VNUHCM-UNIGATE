@@ -56,73 +56,114 @@ CREATE OR REPLACE PROCEDURE run_xet_tuyen_batch()
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_max_nv  INT := (SELECT MAX(thu_tu_nguyen_vong)
-                      FROM   nguyen_vong_xet_tuyen);
-    v_round   INT := 1;
+    v_max_nv INT := (
+        SELECT MAX(thu_tu_nguyen_vong) FROM nguyen_vong_xet_tuyen
+    );
+    v_round  INT := 1;
 BEGIN
-    -- Xoá kết quả cũ cho lần chạy mới (tuỳ ý)
+    ----------------------------------------------------------------
+    -- 0.  Reset bảng tạm kết quả cho lần chạy mới
+    ----------------------------------------------------------------
     TRUNCATE ket_qua_xet_tuyen;
 
+    ----------------------------------------------------------------
+    -- 1.  Vòng xét từng nguyện vọng (1 … v_max_nv)
+    ----------------------------------------------------------------
     WHILE v_round <= v_max_nv LOOP
-        ----------------------------------------------------------------
-        -- Trong một vòng duy nhất, gói toàn bộ logic vào ONE statement
-        ----------------------------------------------------------------
         WITH
-        co_da_nhan AS (
-            SELECT ma_nganh, COUNT(*) AS filled
-            FROM   ket_qua_xet_tuyen
-            GROUP  BY ma_nganh
-        ),
-        /* 1️⃣  Danh sách ứng viên của vòng v_round */
+        /* 1️⃣ Ứng viên vòng hiện tại (chưa đỗ) */
         ung_vien AS (
             SELECT q.cccd,
                    n.ma_nganh,
-                   h.diem_xet_tuyen,
-                   d.chi_tieu_tuyen_sinh,
-                   COALESCE(c.filled,0)        AS filled,
-                   ROW_NUMBER() OVER (PARTITION BY n.ma_nganh
-                                      ORDER BY h.diem_xet_tuyen DESC) AS rnk
+                   h.diem_xet_tuyen
             FROM   queue q
-            JOIN   nguyen_vong_xet_tuyen n ON n.cccd = q.cccd
-            JOIN   ho_so_xet_tuyen       h ON h.cccd = q.cccd
-            JOIN   nganh_dao_tao_dai_hoc d USING (ma_nganh)
-            LEFT   JOIN co_da_nhan       c USING (ma_nganh)
+            JOIN   nguyen_vong_xet_tuyen n USING (cccd)
+            JOIN   ho_so_xet_tuyen       h USING (cccd)
             WHERE  q.trang_thai = FALSE
               AND  n.thu_tu_nguyen_vong = v_round
         ),
-        /* 2️⃣  Giữ lại đúng số chỉ tiêu */
-        duoc_nhan AS (
-            SELECT *
-            FROM   ung_vien
-            WHERE  (chi_tieu_tuyen_sinh - filled) > 0      -- ngành còn chỗ?
-              AND  rnk <= (chi_tieu_tuyen_sinh - filled)   -- vừa đủ phần trống
+
+        /* 2️⃣ Hợp nhất & khử trùng (giữ điểm cao nhất mỗi (ngành, cccd)) */
+        hop_ung_vien AS (
+            SELECT DISTINCT ON (ma_nganh, cccd)
+                   ma_nganh, cccd, score
+            FROM (
+                SELECT ma_nganh, cccd, score          FROM ket_qua_xet_tuyen
+                UNION ALL
+                SELECT ma_nganh, cccd, diem_xet_tuyen FROM ung_vien
+            ) AS u
+            ORDER BY ma_nganh, cccd, score DESC
         ),
-        /* 3️⃣  Chèn vào bảng kết quả, lấy ra các thí sinh đã đỗ */
-        inserted AS (
+
+        /* 3️⃣ Xếp hạng theo điểm cho từng ngành */
+        xep_hang AS (
+            SELECT h.*,
+                   d.chi_tieu_tuyen_sinh,
+                   ROW_NUMBER() OVER (PARTITION BY h.ma_nganh
+                                      ORDER BY h.score DESC, h.cccd) AS rn
+            FROM   hop_ung_vien h
+            JOIN   nganh_dao_tao_dai_hoc d USING (ma_nganh)
+        ),
+
+        /* 4️⃣ Danh sách chính thức (top-K) */
+        keep AS (
+            SELECT * FROM xep_hang
+            WHERE  rn <= chi_tieu_tuyen_sinh
+        ),
+
+        /* 5️⃣ Thí sinh CẦN CHÈN (mới đỗ) */
+        to_insert AS (
+            SELECT k.ma_nganh, k.cccd, k.score
+            FROM   keep k
+            LEFT   JOIN ket_qua_xet_tuyen old
+                   USING (ma_nganh, cccd)
+            WHERE  old.cccd IS NULL
+        ),
+
+        /* 6️⃣ Thí sinh CẦN XOÁ (bị đẩy ra) */
+        to_delete AS (
+            SELECT old.ma_nganh, old.cccd
+            FROM   ket_qua_xet_tuyen old
+            LEFT   JOIN keep k
+                   USING (ma_nganh, cccd)
+            WHERE  k.cccd IS NULL
+        ),
+
+        /* 7️⃣ Thao tác chèn, xoá và cập-nhật queue — TẤT CẢ trong CÙNG statement */
+        ins AS (
             INSERT INTO ket_qua_xet_tuyen (ma_nganh, cccd, score)
-            SELECT ma_nganh, cccd, diem_xet_tuyen
-            FROM   duoc_nhan
-            ON CONFLICT (ma_nganh, cccd) DO NOTHING
+            SELECT * FROM to_insert
             RETURNING cccd
         ),
-        /* 4️⃣  Đánh dấu queue -> đã trúng tuyển */
-        updated_true AS (
-            UPDATE queue q
-            SET    trang_thai = TRUE,
-                   da_xet     = v_round
-            FROM   inserted i
-            WHERE  q.cccd = i.cccd
-            RETURNING q.cccd
+        del AS (
+            DELETE FROM ket_qua_xet_tuyen k
+            USING  to_delete d
+            WHERE  k.ma_nganh = d.ma_nganh
+              AND  k.cccd     = d.cccd
+            RETURNING k.cccd
         )
-        /* 5️⃣  Những thí sinh không đỗ nhưng đã xét xong vòng này */
+        /* 8️⃣ Cập nhật trạng thái queue cho cả ins & del */
         UPDATE queue q
+        SET    trang_thai = CASE
+                              WHEN ins.cccd IS NOT NULL THEN TRUE   -- vừa đỗ
+                              WHEN del.cccd IS NOT NULL THEN FALSE  -- bị đẩy
+                              ELSE q.trang_thai
+                            END,
+               da_xet     = v_round
+        FROM   ins
+        FULL   JOIN del USING (cccd)
+        WHERE  q.cccd = COALESCE(ins.cccd, del.cccd)
+        ;
+
+        /* 9️⃣ Thí sinh rớt vòng này (không đỗ, không bị đẩy) */
+        UPDATE queue
         SET    da_xet = v_round
         WHERE  trang_thai = FALSE
-          AND  da_xet < v_round;
+          AND  da_xet     < v_round;
 
-        ----------------------------------------------------------------
-        v_round := v_round + 1;   -- sang vòng nguyện vọng tiếp theo
+        v_round := v_round + 1;
     END LOOP;
+
 END $$;
 -- call run_xet_tuyen_batch();
 
@@ -141,31 +182,161 @@ begin
 end;
 $$;
 
+select * from danh_sach_du_dieu_kien_trung_tuyen;
+
+-- call clear_danh_sach_du_dieu_kien();
+
+select * from ket_qua_xet_tuyen;
+
+
+
+-- select * from queue where trang_thai = false;
+CREATE OR REPLACE FUNCTION fn_kiem_tra_rot_oan()
+RETURNS TABLE (
+    cccd            VARCHAR(12),
+    ma_nganh        VARCHAR(20),
+    diem_thi_sinh   NUMERIC,
+    diem_chuan_nganh NUMERIC
+)
+LANGUAGE sql
+AS $$
+WITH
+diem_chuan AS (                          -- 1. điểm thấp nhất đang đỗ
+    SELECT ma_nganh, MIN(score) AS min_score
+    FROM   ket_qua_xet_tuyen
+    GROUP  BY ma_nganh
+),
+next_nv AS (                             -- 2. nguyện vọng kế của thí sinh rớt
+    SELECT q.cccd,
+           n.ma_nganh
+    FROM   queue q
+    JOIN   nguyen_vong_xet_tuyen n
+           ON n.cccd = q.cccd
+          AND n.thu_tu_nguyen_vong = q.da_xet + 1
+    WHERE  q.trang_thai = FALSE
+)
+SELECT nv.cccd,
+       nv.ma_nganh,
+       h.diem_xet_tuyen  AS diem_thi_sinh,
+       dc.min_score      AS diem_chuan_nganh
+FROM   next_nv  nv
+JOIN   ho_so_xet_tuyen h USING (cccd)
+JOIN   diem_chuan      dc USING (ma_nganh)
+WHERE  h.diem_xet_tuyen > dc.min_score     -- 3. cao hơn chuẩn
+ORDER  BY nv.ma_nganh, h.diem_xet_tuyen DESC;
+$$;
+SELECT * FROM fn_kiem_tra_rot_oan();
+SELECT ma_nganh, COUNT(*) AS so_duoc_nhan, chi_tieu_tuyen_sinh
+FROM   danh_sach_du_dieu_kien_trung_tuyen
+JOIN   nganh_dao_tao_dai_hoc USING (ma_nganh)
+GROUP  BY ma_nganh, chi_tieu_tuyen_sinh
+HAVING COUNT(*) > chi_tieu_tuyen_sinh;
 CREATE OR REPLACE PROCEDURE xet_tuyen()
 LANGUAGE plpgsql
 AS $$
-begin
-    -- Tạo bảng kết quả xét tuyển
-    CALL create_result_table();
-
-    -- Tạo bảng queue
+DECLARE
+    v_rot_oan  INT;
+    v_vuot_ct  INT;
+    v_trung_pk INT;
+BEGIN
+    ----------------------------------------------------------------
+    -- 1. Chuẩn bị bảng tạm
+    ----------------------------------------------------------------
+    CALL create_result_table();   -- chỉ tạo 1 lần nếu chưa có
     CALL create_queue_table();
+    CALL insert_data();           -- nạp dữ liệu queue
 
-    -- Chèn dữ liệu vào bảng queue
-    CALL insert_data();
-
-    -- Chạy xét tuyển
+    ----------------------------------------------------------------
+    -- 2. Chạy xét tuyển
+    ----------------------------------------------------------------
     CALL run_xet_tuyen_batch();
 
-    -- Chèn dữ liệu vào bảng danh_sach_du_dieu_kien_trung_tuyen
+    ----------------------------------------------------------------
+    -- 3. Kiểm tra toàn vẹn
+    ----------------------------------------------------------------
+    /* 3.1 Rớt oan? */
+    SELECT COUNT(*) INTO v_rot_oan FROM fn_kiem_tra_rot_oan();
+    IF v_rot_oan > 0 THEN
+        RAISE EXCEPTION
+          'Phát hiện % thí sinh rớt nhưng điểm cao hơn điểm chuẩn ngành. Thuật toán cần rà soát.',
+          v_rot_oan;
+    END IF;
+
+    /* 3.2 Vượt chỉ tiêu ngành? */
+    SELECT COUNT(*) INTO v_vuot_ct
+    FROM (
+        SELECT ma_nganh
+        FROM   ket_qua_xet_tuyen k
+        JOIN   nganh_dao_tao_dai_hoc d USING (ma_nganh)
+        GROUP  BY ma_nganh, chi_tieu_tuyen_sinh
+        HAVING COUNT(*) > chi_tieu_tuyen_sinh
+    ) AS t;
+    IF v_vuot_ct > 0 THEN
+        RAISE EXCEPTION
+          'Có % ngành vượt quá chỉ tiêu sau khi xét tuyển.', v_vuot_ct;
+    END IF;
+    ----------------------------------------------------------------
+    -- 4. Ghi dữ liệu sang bảng công bố
+    ----------------------------------------------------------------
+    TRUNCATE danh_sach_du_dieu_kien_trung_tuyen;
+
     call insert_xet_tuyen_data_into_danh_sach_du_dieu_kien();
 
-    -- Xoá bảng queue
-    DROP TABLE IF EXISTS queue;
+    ----------------------------------------------------------------
+    -- 5. Dọn bảng tạm
+    ----------------------------------------------------------------
+--     DROP TABLE IF EXISTS queue;
+--     DROP TABLE IF EXISTS ket_qua_xet_tuyen;
 
-    -- Xoá bảng ket_qua_xet_tuyen
-    DROP TABLE IF EXISTS ket_qua_xet_tuyen;
-end;
-    $$
+    RAISE NOTICE 'Xét tuyển hoàn tất và đã cập nhật bảng danh_sach_du_dieu_kien_trung_tuyen.';
+END;
+$$;
 
 call xet_tuyen();
+
+select * from ket_qua_xet_tuyen where cccd = '123456789012';
+
+select * from danh_sach_du_dieu_kien_trung_tuyen;
+
+select * from danh_sach_du_dieu_kien_trung_tuyen where ma_nganh = 'QST7480107';
+
+create or replace function truy_van_ket_qua_xet_tuyen(
+    p_cccd varchar(12)
+)
+returns table (
+    trang_thai boolean,
+    ma_nganh varchar(20),
+    diem_xet_tuyen numeric
+)
+language sql
+as $$
+    with
+    ds AS (
+        select cccd, ma_nganh, diem_xet_tuyen
+        from danh_sach_du_dieu_kien_trung_tuyen
+        where cccd = p_cccd
+    )
+    select case when exists (select * from ds) then true else false end as trang_thai,
+           ma_nganh,
+           diem_xet_tuyen
+    from ds
+    union all
+    select false, null, null
+    where not exists (select * from ds);
+
+$$;
+
+select * from truy_van_ket_qua_xet_tuyen('123456789012');
+
+create or replace function diem_chuan_nganh(
+    p_ma_nganh varchar(20)
+)
+returns numeric
+language sql
+as $$
+    select min(score)
+    from ket_qua_xet_tuyen
+    where ma_nganh = p_ma_nganh;
+$$;
+
+select diem_chuan_nganh('QST7480107');
