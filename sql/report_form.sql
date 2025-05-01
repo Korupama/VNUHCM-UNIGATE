@@ -8,4 +8,35 @@ create or replace view report_application as
         join truong_thpt on thi_sinh.ma_truong_thpt = truong_thpt.ma_truong ;
 
 -- refresh materialized view report_application;
-select * from report_application where cccd = '081660076239';
+select * from report_application;
+
+
+select * from report_result where cccd='050107072704'
+
+select * from ket_qua_thi
+where ket_qua_thi.cccd  = '050107072704'
+CREATE OR REPLACE VIEW v_report_result AS
+SELECT
+    ts.cccd,
+    hsdt.ma_ho_so_du_thi,
+    ts.ho_ten,
+    ts.ngay_sinh,
+    tt.ten_truong_thpt AS truong_thpt,
+    hsdt.dia_diem_du_thi,
+    hsdt.dot_thi,
+    kqt.diem_thanh_phan_tieng_viet,
+    kqt.diem_thanh_phan_tieng_anh,
+    kqt.diem_thanh_phan_toan_hoc,
+    kqt.diem_thanh_phan_logic_phan_tich_so_lieu,
+    kqt.diem_thanh_phan_suy_luan_khoa_hoc,
+    kqt.ket_qua_thi AS tong_diem
+FROM
+    thi_sinh ts
+JOIN
+    ho_so_du_thi hsdt ON ts.cccd = hsdt.cccd
+JOIN
+    ket_qua_thi kqt ON ts.cccd = kqt.cccd AND hsdt.dot_thi = kqt.dot_thi
+LEFT JOIN
+    truong_thpt tt ON ts.ma_truong_thpt = tt.ma_truong;
+
+SELECT * FROM v_report_result WHERE cccd = '050107072704';
