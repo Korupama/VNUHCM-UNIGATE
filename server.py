@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Response, Form, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 import os
 import psycopg2
@@ -14,9 +14,11 @@ import unicodedata
 from psycopg2.extras import RealDictCursor
 from app.services.auth_utils import verify_user, create_access_token, get_current_user
 from app.services.application_report import get_report_application 
-from app.services.result_report import get_result_report
+from app.services.result_report import get_report_result
 from app.services.chatbot import get_response
 from typing import Optional
+from weasyprint import HTML
+from io import BytesIO
 
 class DeletePostRequest(BaseModel):
     post_id: int
@@ -370,7 +372,7 @@ async def get_document(request: Request):
         return {"error": "File not found"}
 
 
-@app.get("/api/get-application-report", response_class=HTMLResponse)
+@app.get("/api/get-application-report")
 def get_application_report(cccd: str, dot_thi: int):
     ma_ho_so = ''
     if dot_thi == 1:
@@ -396,6 +398,7 @@ def get_application_report(cccd: str, dot_thi: int):
             "dia_chi_lien_lac": application_form[10],
             "tinh": application_form[11],
         }
+        # print("DEBUG application_form_dict:", application_form_dict, flush=True)
         time = ''
         if dot_thi == 1:
             time = '07h30 ngày 30/3/2025'
@@ -403,44 +406,59 @@ def get_application_report(cccd: str, dot_thi: int):
             time = '07h30 ngày 30/6/2025'
         
         html = get_report_application(application_form_dict, time)
-        return HTMLResponse(content=html)
-    else:
-        return {"message": "No application form found for this user"}
+        # print("––––– HTML START –––––")
+        # print(html[:500])    # in 500 ký tự đầu
+        # print("––––– HTML END –––––")
+        # base = Request.url_for("static", path="") 
+        pdf_io = BytesIO()
+        HTML(string=html).write_pdf(pdf_io)
+        pdf_io.seek(0)
 
-@app.get("/api/get-result-report", response_class=HTMLResponse)
-def get_result_report(cccd: str, dot_thi: int):
-    ma_ho_so = ''
-    if dot_thi == 1:
-        ma_ho_so = 'HS' + cccd
-    elif dot_thi == 2:
-        ma_ho_so = 'H2' + cccd
+        return StreamingResponse(
+            content=pdf_io,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'inline; filename="giay_bao_du_thi_{ma_ho_so}.pdf"'
+            },
+        )
+@app.get("/api/get-result-report")
+def get_result_report(cccd: str):
     with conn.cursor() as cur:
-        cur.execute("select * from report_application where ma_ho_so_du_thi = %s", (ma_ho_so,))
+        cur.execute("SELECT * FROM report_result WHERE cccd = %s order by tong_diem desc limit 1;", (cccd,))
         result_form = cur.fetchall() 
     if result_form:
         result_form = result_form[0]
         result_form_dict = {
             "cccd": result_form[0],
             "ma_ho_so_du_thi": result_form[1],
-            "dia_diem_du_thi": result_form[2],
-            "dot_thi": result_form[3], 
-            "ho_ten": result_form[4],
-            "ngay_sinh": result_form[5],
-            "ten_truong_thpt": result_form[6],
-            "tinh": result_form[7],
-            "diem_thanh_phan_tieng_viet": result_form[8], 
-            "diem_thanh_phan_tieng_anh": result_form[9], 
-            "diem_thanh_phan_toan_hoc": result_form[10],
-            "diem_thanh_phan_logic_phan_tich_so_lieu": result_form[11],
-            "diem_thanh_phan_suy_luan_khoa_hoc": result_form[12], 
-            "ket_qua_thi": result_form[13]
+            "ho_ten": result_form[2],
+            "ngay_sinh": result_form[3],
+            "ten_truong_thpt": result_form[4],
+            "dia_diem_du_thi": result_form[5],
+            "dot_thi": result_form[6],
+            "diem_thanh_phan_tieng_viet": result_form[7],
+            "diem_thanh_phan_tieng_anh": result_form[8],
+            "diem_thanh_phan_toan_hoc": result_form[9],
+            "diem_thanh_phan_logic_phan_tich_so_lieu": result_form[10],
+            "diem_thanh_phan_suy_luan_khoa_hoc": result_form[11],
+            "ket_qua_thi": result_form[12],
+            "tinh": result_form[13]
         }
   
-        html = get_result_report(result_form_dict)
-        return HTMLResponse(content=html)
-    else:
-        return {"message": "No result form found for this user"}
+        html = get_report_result(result_form_dict)
+        # print("DEBUG type(html):", type(html), flush=True)
+        pdf_io = BytesIO()
+        HTML(string=html).write_pdf(pdf_io)
+        pdf_io.seek(0)
 
+        return StreamingResponse(
+            content=pdf_io,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'inline; filename="giay_bao_ket_qua_thi_{cccd}.pdf"'
+            },
+        )
+    
 
 @app.get("/api/recommend-field-of-study")
 def recommend_field_of_study(cccd: str):

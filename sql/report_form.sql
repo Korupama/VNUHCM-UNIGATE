@@ -14,8 +14,13 @@ select * from report_application;
 select * from report_result where cccd='050107072704'
 
 select * from ket_qua_thi
-where ket_qua_thi.cccd  = '050107072704'
-CREATE OR REPLACE VIEW v_report_result AS
+
+-- select * from v_report_result
+
+-- drop view if exists v_report_result;
+-- DROP VIEW v_report_result CASCADE;
+
+CREATE OR REPLACE VIEW report_result AS
 SELECT
     ts.cccd,
     hsdt.ma_ho_so_du_thi,
@@ -29,7 +34,8 @@ SELECT
     kqt.diem_thanh_phan_toan_hoc,
     kqt.diem_thanh_phan_logic_phan_tich_so_lieu,
     kqt.diem_thanh_phan_suy_luan_khoa_hoc,
-    kqt.ket_qua_thi AS tong_diem
+    kqt.ket_qua_thi AS tong_diem,
+    tt.tinh_thanh_pho as tinh
 FROM
     thi_sinh ts
 JOIN
@@ -39,4 +45,5 @@ JOIN
 LEFT JOIN
     truong_thpt tt ON ts.ma_truong_thpt = tt.ma_truong;
 
-SELECT * FROM v_report_result WHERE cccd = '050107072704';
+SELECT * FROM report_result WHERE cccd = '050107072704'
+-- order by tong_diem desc limit 1;

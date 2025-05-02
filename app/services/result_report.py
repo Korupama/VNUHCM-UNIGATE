@@ -1,4 +1,4 @@
-def get_result_report(result_form_dict):
+def get_report_result(result_form_dict : dict) -> str: 
     return f"""
         <html>
         <head> 
@@ -32,7 +32,7 @@ def get_result_report(result_form_dict):
 	<div style="left: 325px; top: 282px; position: absolute; color: black; font-size: 13px; font-family: Times New Roman; font-weight: 400; line-height: 19.50px; word-wrap: break-word">Ngày sinh:</div>
 
 	<div style="left: 389px; top: 282px; position: absolute; color: black; font-size: 13px; font-family: Times New Roman; font-weight: 700; line-height: 19.50px; word-wrap: break-word">{result_form_dict['ngay_sinh']}</div>
-	<div style="left: 325px; top: 310px; position: absolute; color: black; font-size: 13px; font-family: Times New Roman; font-weight: 400; line-height: 19.50px; word-wrap: break-word">Trường: {result_form_dict['ten_truong_thpt']},<br/> tỉnh {result_form_dict['tinh']}</div>
+	<div style="left: 325px; top: 310px; position: absolute; color: black; font-size: 13px; font-family: Times New Roman; font-weight: 400; line-height: 19.50px; word-wrap: break-word">Trường: {result_form_dict['ten_truong_thpt']},<br/> {result_form_dict['tinh']}</div>
 	<div style="width: 499px; height: 366px; left: 48px; top: 351px; position: absolute; border-top: 0.80px #E9ECEF solid"></div>
 	<div style="left: 248px; top: 355px; position: absolute; text-align: center; color: black; font-size: 16px; font-family: Times New Roman; font-weight: 700; line-height: 24px; word-wrap: break-word">KẾT QUẢ THI</div>
 	<div style="width: 113px; height: 90px; left: 119px; top: 387px; position: absolute; background: #F8F9FA; border-radius: 4px"></div>
@@ -56,7 +56,7 @@ def get_result_report(result_form_dict):
 	<div style="left: 267px; top: 641px; position: absolute; text-align: center; color: black; font-size: 32px; font-family: Times New Roman; font-weight: 700; line-height: 48px; word-wrap: break-word">{result_form_dict['ket_qua_thi']}</div>
 	<div style="left: 337px; top: 717px; position: absolute; text-align: right; color: black; font-size: 13px; font-family: Times New Roman; font-weight: 700; line-height: 19.50px; word-wrap: break-word">TP.HCM, ngày 15 tháng 06 năm 2025</div>
 	<div style="left: 366px; top: 746px; position: absolute; text-align: center; color: black; font-size: 16px; font-family: Times New Roman; font-weight: 700; line-height: 24px; word-wrap: break-word">HỘI ĐỒNG <br />KỲ THI ĐÁNH GIÁ<br />NĂNG LỰC NĂM 2025 </div>
-	<img style="width: 180px; height: 55px; left: 48px; top: 32px; position: absolute" src="https://placehold.co/180x55" />
+	<img style="width: 180px; height: 55px; left: 48px; top: 32px; position: absolute" src="https://i.imgur.com/Ao2HoX9.png" />
     </div>
      </body>
      </html>
