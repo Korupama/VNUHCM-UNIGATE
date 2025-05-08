@@ -4,6 +4,7 @@
     <file url="file://$PROJECT_DIR$/sql/account_security.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/sql/report_form.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/sql/xet_tuyen.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/temp.sql" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>

@@ -553,3 +553,72 @@ def update_major_quota(request: MajorQuotaRequest):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Lỗi máy chủ: {str(e)}")
+
+@app.get("/api/report-ho-so")
+def report_ho_so():
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM v_report_ho_so_du_thi")
+            ho_so = cur.fetchall()
+        ho_so = ho_so[0] if ho_so else []
+        so_ho_so = ho_so['so_ho_so_du_thi']
+        so_dot_1 = ho_so['so_ho_so_du_thi_dot_1']
+        so_dot_2 = ho_so['so_ho_so_du_thi_dot_2']
+        report = { 
+            "number": {
+                "so_ho_so_du_thi": so_ho_so,
+                "so_dot_1": so_dot_1,
+                "so_dot_2": so_dot_2
+            },
+            "percentage": {
+                "so_ho_so_du_thi": 100,
+                "so_dot_1": round(so_dot_1 / so_ho_so * 100, 2),
+                "so_dot_2": round(so_dot_2 / so_ho_so * 100, 2)
+            }
+        }
+        return report
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/report-tinh-thanh-pho")
+def report_tinh_thanh_pho():
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM v_report_tinh_thanh_pho")
+            ho_so = cur.fetchall()
+        # ho_so = ho_so[0] if ho_so else []
+        return ho_so
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/api/report-nguyen-vong")
+def report_nguyen_vong():
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM v_report_nguyen_vong")
+            ho_so = cur.fetchall()
+        # ho_so = ho_so[0] if ho_so else []
+        return ho_so
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/report-pho-diem-dot-1")
+def report_pho_diem_dot_1():
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM v_pho_diem_dot_1")
+            ho_so = cur.fetchall()
+        # ho_so = ho_so[0] if ho_so else []
+        return ho_so
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@app.get("/api/report-pho-diem-dot-2")
+def report_pho_diem_dot_2():
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT * FROM v_pho_diem_dot_2")
+            ho_so = cur.fetchall()
+        # ho_so = ho_so[0] if ho_so else []
+        return ho_so
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

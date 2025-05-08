@@ -242,9 +242,9 @@ BEGIN
     ----------------------------------------------------------------
     -- 1. Chuẩn bị bảng tạm
     ----------------------------------------------------------------
-    CALL create_result_table();   -- chỉ tạo 1 lần nếu chưa có
-    CALL create_queue_table();
-    CALL insert_data();           -- nạp dữ liệu queue
+    CALL create_result_table();
+    truncate queue;
+    CALL insert_data();
 
     ----------------------------------------------------------------
     -- 2. Chạy xét tuyển
@@ -285,8 +285,8 @@ BEGIN
     ----------------------------------------------------------------
     -- 5. Dọn bảng tạm
     ----------------------------------------------------------------
---     DROP TABLE IF EXISTS queue;
---     DROP TABLE IF EXISTS ket_qua_xet_tuyen;
+    DROP TABLE IF EXISTS queue;
+    DROP TABLE IF EXISTS ket_qua_xet_tuyen;
 
     RAISE NOTICE 'Xét tuyển hoàn tất và đã cập nhật bảng danh_sach_du_dieu_kien_trung_tuyen.';
 END;
