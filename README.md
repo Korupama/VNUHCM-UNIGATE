@@ -45,3 +45,5 @@ Cài đặt các biến môi trường trong file `.env` với mẫu trong file 
 
 - Cài đặt các thư viện cần thiết với lệnh `pip install -r requirements.txt --require-hashes` 
 - Chạy server với lệnh `uvicorn main:app` hoặc `uvicorn main:app --reload` (để tự động tải lại khi có thay đổi trong mã nguồn).
+
+![chatbot(1)](https://github.com/user-attachments/assets/49bb3e8c-14a0-4e24-b24e-b1500b174c56)
